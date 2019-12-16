@@ -1,13 +1,9 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"os"
-
-	gh "github.com/google/go-github/github"
-	"golang.org/x/oauth2"
 )
 
 func main() {
@@ -27,29 +23,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	getTokenSource := func() oauth2.TokenSource {
-		if len(*key) > 0 {
-			return oauth2.StaticTokenSource(
-				&oauth2.Token{AccessToken: *key},
-			)
-		}
-		return nil
-	}
-
-	ctx := context.Background()
-	tc := oauth2.NewClient(ctx, getTokenSource())
-	client := gh.NewClient(tc)
-
-	userRepos, _, err := client.Repositories.List(ctx, *user, nil)
+	repos, err := getRepos(*user, *key, *forks)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, repo := range userRepos {
-		if *repo.Fork && !*forks {
-			continue
-		}
-
-		fmt.Println(*repo.Name)
+	for _, repo := range repos {
+		fmt.Println(repo)
 	}
 }
