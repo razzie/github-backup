@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 )
 
 func main() {
@@ -22,6 +23,13 @@ func main() {
 		fmt.Println("Backup directory not specified")
 		os.Exit(1)
 	}
+
+	git := exec.Command("git")
+	err := git.Start()
+	if err != nil {
+		panic(err)
+	}
+	git.Wait()
 
 	repos, err := getRepos(*user, *key, *forks)
 	if err != nil {
