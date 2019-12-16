@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"sync"
 )
 
 func main() {
@@ -12,6 +13,7 @@ func main() {
 	key := flag.String("key", "", "Github access key")
 	dir := flag.String("o", "", "Backup directory")
 	forks := flag.Bool("forks", false, "Enable backup of forked repos")
+	ssh := flag.Bool("ssh", false, "Using SSH cloning instead of HTTPS")
 	flag.Parse()
 
 	if len(*user) == 0 {
@@ -36,7 +38,11 @@ func main() {
 		panic(err)
 	}
 
+	var wg sync.WaitGroup
 	for _, repo := range repos {
-		fmt.Println(repo)
+		wg.Add(1)
+		go backupRepo(repo, *dir, *ssh, &wg)
 	}
+
+	wg.Wait()
 }
